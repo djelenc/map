@@ -1,9 +1,7 @@
 let colors = ["red", "blue", "green", "orange", "yellow"]
 let colorCount = -1;
-
 let selectedRoute;
 let routeCount = 0;
-
 let map;
 
 Meteor.startup(function(){
@@ -19,32 +17,32 @@ Template.body.rendered = function () {
   });
 };
 
-Template.body.onCreated(() => {
-  this.state = new ReactiveDict();
-});
-
 Template.body.helpers({
 });
 
 Template.body.events({
   "click #send"(event) {
-    event.preventDefault();
-    // Meteor.call("uploadMap", "ccc_quick_maps", { name: "david", value: 100 });
-    // sendRoute();
-    console.log("send");
+    const recipient = $("#sendTarget").val();
+    const payload = JSON.stringify(selectedRoute["coords"]);
+    console.log("recipient: " + recipient + ", payload: " + payload);
+
+    Meteor.call("uploadMap", recipient, payload);
   },
-  "click #clear"(event) {
-    event.preventDefault();
-    clearRoute();
-    // Meteor.call("uploadMap", "ccc_quick_maps", { name: "david", value: 100 });
-    console.log("clear");
+  "click #clear"() {
+    let tempColor = selectedRoute["poly"].options.color;
+  	selectedRoute.clearLayers();
+  	selectedRoute["poly"] = L.polyline([], {color: tempColor}).addTo(selectedRoute);
+  	selectedRoute["coords"] = [];
   },
-  "click #new"(event) {
-    event.preventDefault();
-    // Meteor.call("uploadMap", "ccc_quick_maps", { name: "david", value: 100 });
-    // newRoute();
-    console.log("new");
-  }
+  "click #new"() { newRoute(); },
+  "click #greenIcon"() { selectedIcon = greenIcon; },
+  "click #medicalIcon"() { selectedIcon = medicalIcon; },
+  "click #redIcon"() { selectedIcon = redIcon; },
+  "click #policeIcon"() { selectedIcon = policeIcon; },
+  "click #blueIcon"() { selectedIcon = blueIcon; },
+  "click #fireIcon"() { selectedIcon = fireIcon; },
+  "click #orangeIcon"() { selectedIcon = orangeIcon; },
+  "click #crashIcon"() { selectedIcon = crashIcon; }
 });
 
 function createIcons() {
@@ -67,28 +65,36 @@ function createMap() {
   }).addTo(map);
   map.doubleClickZoom.disable();
   map.on('dblclick', (event) => {
-    addMarker(event.latlng.lat, event.latlng.lng);
+    const lat = event.latlng.lat;
+    const lon = event.latlng.lng;
+
+    selectedRoute.addLayer(L.marker([lat, lon], {icon: selectedIcon}));
     selectedRoute["poly"].addLatLng(event.latlng);
-    selectedRoute["coords"].push([event.latlng.lat, event.latlng.lng, selectedIcon["name"]]);
+    selectedRoute["coords"].push({
+      "lat": lat,
+      "lon": lon,
+      "icon": selectedIcon["name"]
+    });
   });
   newRoute();
 }
 
 
-function getColor(){
-	colorCount = (colorCount+1)%colors.length;
-	return colors[colorCount];
+function getColor() {
+	return colors[(colorCount + 1) % colors.length];
 }
 
 function onRouteClick(event){
 	if(selectedRoute["coords"].length == 0){
-		removeSelectedRoute();
+		map.removeLayer(selectedRoute);
 	} else {
 		selectedRoute["poly"].setStyle({
 			color: selectedRoute["color"],
 			opacity: 0.5
 		});
 	}
+  console.log(event.target);
+
 	selectedRoute = event.target;
 	selectedRoute["poly"].setStyle({
 		color: 'white',
@@ -96,23 +102,19 @@ function onRouteClick(event){
 	});
 }
 
-function removeSelectedRoute(){
-	map.removeLayer(selectedRoute);
-}
-
 function newRoute() {
-  console.log("new route");
-
 	if (selectedRoute && selectedRoute["coords"].length == 0){
 		map.addLayer(selectedRoute);
 		return;
 	}
+
 	if (selectedRoute ){
 		selectedRoute["poly"].setStyle({
 			color: selectedRoute["color"],
 			opacity: 0.5
 		});
 	}
+
 	let route = new L.FeatureGroup();
 	route["coords"] = [];
 	route.on('click', onRouteClick);
@@ -124,24 +126,6 @@ function newRoute() {
 
 	map.addLayer(selectedRoute);
 }
-
-function sendRoute(){
-	let name = document.getElementById("sendTarget").value;
-	alert(name+" "+JSON.stringify(selectedRoute["coords"]));
-	window.status = name+" "+JSON.stringify(selectedRoute["coords"]);
-}
-
-function clearRoute(){
-	let tempColor = selectedRoute["poly"].options.color;
-	selectedRoute.clearLayers();
-	selectedRoute["poly"] = L.polyline([], {color: tempColor}).addTo(selectedRoute);
-	selectedRoute["coords"] = [];
-}
-
-function addMarker(y,x){
-	selectedRoute.addLayer(L.marker([y, x], {icon: selectedIcon}));
-}
-
 
 function createIcon(name) {
   let icon = L.icon({
