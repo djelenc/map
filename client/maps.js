@@ -1,7 +1,10 @@
-let colors = ["red", "blue", "green", "orange", "yellow"]
+const TILES = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?'
+            + 'access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliN'
+            + 'DBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw';
+const colors = ["red", "blue", "green", "orange", "yellow"];
+
 let colorCount = -1;
 let selectedRoute;
-let routeCount = 0;
 let map;
 
 Meteor.startup(function(){
@@ -11,13 +14,49 @@ Meteor.startup(function(){
 Template.body.rendered = function () {
   this.autorun(function () {
     if (Leaflet.loaded()) {
-      createIcons();
-      createMap();
+      // create globally accessible icons
+      greenIcon = createIcon("green");
+      blueIcon = createIcon("blue");
+      redIcon = createIcon("red");
+      orangeIcon = createIcon("orange");
+      medicalIcon = createIcon("medical");
+      policeIcon = createIcon("police");
+      fireIcon = createIcon("fire");
+      crashIcon = createIcon("crash");
+
+      // green is the default icon
+      selectedIcon = greenIcon;
+
+      // initialize map
+      map = L.map('mapid').setView([62.830, 27.515], 17);
+      L.tileLayer(TILES, {
+        maxZoom: 22,
+        id: 'mapbox.streets'
+      }).addTo(map);
+      map.doubleClickZoom.disable();
+      map.on('dblclick', (event) => {
+        const lat = event.latlng.lat;
+        const lon = event.latlng.lng;
+
+        selectedRoute.addLayer(L.marker([lat, lon], {icon: selectedIcon}));
+        selectedRoute["poly"].addLatLng(event.latlng);
+        selectedRoute["coords"].push({
+          "lat": lat,
+          "lon": lon,
+          "icon": selectedIcon["name"]
+        });
+      });
+
+      // start adding new route
+      newRoute();
     }
   });
 };
 
 Template.body.helpers({
+  identities() {
+    return Identities.find();
+  }
 });
 
 Template.body.events({
@@ -45,41 +84,6 @@ Template.body.events({
   "click #crashIcon"() { selectedIcon = crashIcon; }
 });
 
-function createIcons() {
-  greenIcon = createIcon("green");
-  blueIcon = createIcon("blue");
-  redIcon = createIcon("red");
-  orangeIcon = createIcon("orange");
-  medicalIcon = createIcon("medical");
-  policeIcon = createIcon("police");
-  fireIcon = createIcon("fire");
-  crashIcon = createIcon("crash");
-  selectedIcon = greenIcon;
-}
-
-function createMap() {
-  map = L.map('mapid').setView([62.830, 27.515], 17);
-  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-    maxZoom: 22,
-    id: 'mapbox.streets'
-  }).addTo(map);
-  map.doubleClickZoom.disable();
-  map.on('dblclick', (event) => {
-    const lat = event.latlng.lat;
-    const lon = event.latlng.lng;
-
-    selectedRoute.addLayer(L.marker([lat, lon], {icon: selectedIcon}));
-    selectedRoute["poly"].addLatLng(event.latlng);
-    selectedRoute["coords"].push({
-      "lat": lat,
-      "lon": lon,
-      "icon": selectedIcon["name"]
-    });
-  });
-  newRoute();
-}
-
-
 function getColor() {
 	return colors[(colorCount + 1) % colors.length];
 }
@@ -93,7 +97,6 @@ function onRouteClick(event){
 			opacity: 0.5
 		});
 	}
-  console.log(event.target);
 
 	selectedRoute = event.target;
 	selectedRoute["poly"].setStyle({

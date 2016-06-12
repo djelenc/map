@@ -20,17 +20,16 @@
 	</div>
 
 	<div id="targetSelect">
-		<select id="sendTarget" name="Target" form="SALUS">
-			<option value="David">David</option>
-			<option value="Bernd">Bernd</option>
-			<option value="Mervin">Mervin</option>
-			<option value="Hugo">Hugo</option>
+		<select id="sendTarget">
+			{{#each identities}}
+				<option value="{{identity}}">{{display}}</option>
+			{{/each}}
 		</select>
 		<br><br>
 		<center>
-			<button id="clear" class='button'>Clear</button>
 			<button id="send" class='button'>Send</button>
 			<button id="new" class='button'>New</button>
+			<button id="clear" class='button'>Clear</button>
 		</center>
 	</div>
 
