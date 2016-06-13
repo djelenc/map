@@ -1,7 +1,7 @@
 const zmq = require('zmq');
 
 const IDENTITY = "ccc_quick_maps";
-const ADDRESS = "127.0.0.1";
+const ADDRESS = "172.15.16.4";
 const PORT = 5550;
 
 const dealer = zmq.socket('dealer');
@@ -18,8 +18,17 @@ dealer.on('message', (sender, type, id, message) => {
 
 Meteor.methods({
   uploadMap(recipient, payload) {
-    const type = 4;
     const id = Math.floor(Math.random() * 2147483647);
-    dealer.send([recipient, type, id, payload]);
+
+    const rpc = {
+      jsonrpc: "2.0",
+      id: id,
+      method: "route_on",
+      params: {
+        "path": payload
+      }
+    };
+
+    dealer.send([recipient,'\x02', id, JSON.stringify(rpc)]);
   }
 });
