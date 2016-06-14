@@ -1,0 +1,22 @@
+{
+  "name": "map",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/djelenc/map.git"
+  },
+  "author": "",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/djelenc/map/issues"
+  },
+  "homepage": "https://github.com/djelenc/map",
+  "dependencies": {
+    "zmq": "2.8.0"
+  }
+}
