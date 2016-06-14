@@ -1,7 +1,7 @@
-const TILES = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?'
+/*const TILES = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?'
             + 'access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliN'
-            + 'DBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw';
-//const TILES = "http://172.15.16.31:1337/{z}/{x}/{y}.png"
+            + 'DBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw';*/
+const TILES = "http://172.15.16.31:1337/{z}/{x}/{y}.png"
 const colors = ["red", "blue", "green", "orange", "yellow"];
 
 let colorCount = -1;
